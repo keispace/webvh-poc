@@ -156,6 +156,25 @@ This is an interoperability PoC, not a production identity service.
 - Resolution is limited to logs stored by this server and does not fetch arbitrary WebVH hosts.
 - The PoC combines the WebVH update key and holder authentication key. Production deployments should separate their custody and rotation policies.
 
+## References
+
+### Standards and specifications
+
+- [`did:webvh` DID Method Specification v1.0](https://identity.foundation/didwebvh/v1.0/)
+- [`did:webvh` specification source repository](https://github.com/decentralized-identity/didwebvh)
+- [W3C Decentralized Identifiers (DIDs) v1.0](https://www.w3.org/TR/did-core/)
+- [W3C Verifiable Credentials Data Model v2.0](https://www.w3.org/TR/2025/REC-vc-data-model-2.0-20250515/)
+- [W3C Securing Verifiable Credentials using JOSE and COSE](https://www.w3.org/TR/2025/REC-vc-jose-cose-20250515/)
+- [W3C Controlled Identifiers v1.0](https://www.w3.org/TR/2025/REC-cid-1.0-20250515/)
+- [W3C Data Integrity EdDSA Cryptosuites v1.0](https://www.w3.org/TR/2025/REC-vc-di-eddsa-20250515/)
+
+### Implementation libraries
+
+- [`didwebvh-ts` 2.8.0](https://github.com/decentralized-identity/didwebvh-ts) — WebVH DID creation, update, and log resolution
+- [`jose` 6.2.3](https://github.com/panva/jose) — JWT/JWS/JWK signing and verification
+- [`@noble/curves` 2.2.0](https://github.com/paulmillr/noble-curves) — Ed25519 key generation and signatures
+- [`fastify` 5.10.0](https://github.com/fastify/fastify) — HTTP server and API routes
+
 ## License
 
 Released under the permissive [Zero-Clause BSD license](./LICENSE).

@@ -156,6 +156,25 @@ https://example.com/issuer/*/did.jsonl
 - 이 서버가 저장한 DID log만 resolve하며 외부의 임의 WebVH host를 fetch하지 않습니다.
 - PoC는 WebVH update key와 holder authentication key를 함께 사용합니다. Production에서는 custody와 rotation 정책을 분리해야 합니다.
 
+## 참고 자료
+
+### 표준 및 사양
+
+- [`did:webvh` DID Method Specification v1.0](https://identity.foundation/didwebvh/v1.0/)
+- [`did:webvh` specification source repository](https://github.com/decentralized-identity/didwebvh)
+- [W3C Decentralized Identifiers (DIDs) v1.0](https://www.w3.org/TR/did-core/)
+- [W3C Verifiable Credentials Data Model v2.0](https://www.w3.org/TR/2025/REC-vc-data-model-2.0-20250515/)
+- [W3C Securing Verifiable Credentials using JOSE and COSE](https://www.w3.org/TR/2025/REC-vc-jose-cose-20250515/)
+- [W3C Controlled Identifiers v1.0](https://www.w3.org/TR/2025/REC-cid-1.0-20250515/)
+- [W3C Data Integrity EdDSA Cryptosuites v1.0](https://www.w3.org/TR/2025/REC-vc-di-eddsa-20250515/)
+
+### 구현 라이브러리
+
+- [`didwebvh-ts` 2.8.0](https://github.com/decentralized-identity/didwebvh-ts) — WebVH DID 생성·업데이트·log resolution
+- [`jose` 6.2.3](https://github.com/panva/jose) — JWT/JWS/JWK 서명 및 검증
+- [`@noble/curves` 2.2.0](https://github.com/paulmillr/noble-curves) — Ed25519 키 생성 및 서명
+- [`fastify` 5.10.0](https://github.com/fastify/fastify) — HTTP 서버 및 API route
+
 ## 라이선스
 
 제약이 매우 적은 [Zero-Clause BSD 라이선스](./LICENSE)로 공개합니다.
