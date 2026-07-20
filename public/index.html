@@ -1,0 +1,1005 @@
+<!doctype html>
+<html lang="ko">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>WebVH VC/VP PoC Console</title>
+        <style>
+            :root {
+                color-scheme: dark;
+                --bg: #07100f;
+                --panel: rgba(15, 30, 28, 0.86);
+                --panel-2: #102622;
+                --line: rgba(170, 255, 222, 0.15);
+                --text: #effff9;
+                --muted: #98b7ad;
+                --mint: #70f7bd;
+                --mint-2: #27c98b;
+                --amber: #ffd479;
+                --red: #ff8f93;
+                --blue: #8fc8ff;
+                --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+            }
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                min-height: 100vh;
+                color: var(--text);
+                background:
+                    radial-gradient(circle at 15% 10%, rgba(39, 201, 139, 0.14), transparent 34rem),
+                    radial-gradient(circle at 90% 5%, rgba(91, 149, 255, 0.12), transparent 30rem), var(--bg);
+                font:
+                    14px/1.55 Inter,
+                    ui-sans-serif,
+                    system-ui,
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    'Segoe UI',
+                    sans-serif;
+            }
+            button,
+            input,
+            textarea {
+                font: inherit;
+            }
+            .shell {
+                width: min(1500px, calc(100% - 32px));
+                margin: 0 auto;
+                padding: 30px 0 70px;
+            }
+            .hero {
+                position: relative;
+                overflow: hidden;
+                padding: 34px;
+                border: 1px solid var(--line);
+                border-radius: 28px;
+                background: linear-gradient(135deg, rgba(22, 52, 45, 0.95), rgba(8, 20, 19, 0.95));
+                box-shadow: var(--shadow);
+            }
+            .hero::after {
+                content: '';
+                position: absolute;
+                width: 340px;
+                height: 340px;
+                right: -110px;
+                top: -180px;
+                border-radius: 50%;
+                background: rgba(112, 247, 189, 0.12);
+                filter: blur(2px);
+            }
+            .eyebrow {
+                color: var(--mint);
+                font-size: 12px;
+                font-weight: 800;
+                letter-spacing: 0.16em;
+                text-transform: uppercase;
+            }
+            h1 {
+                position: relative;
+                margin: 10px 0 8px;
+                max-width: 900px;
+                font-size: clamp(30px, 5vw, 58px);
+                line-height: 1.04;
+                letter-spacing: -0.045em;
+            }
+            .hero p {
+                position: relative;
+                max-width: 900px;
+                margin: 0;
+                color: var(--muted);
+                font-size: 16px;
+            }
+            .hero-actions {
+                position: relative;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-top: 25px;
+            }
+            .status-grid {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 12px;
+                margin-top: 18px;
+            }
+            .status-card {
+                min-width: 0;
+                padding: 15px 17px;
+                border: 1px solid var(--line);
+                border-radius: 16px;
+                background: rgba(0, 0, 0, 0.18);
+            }
+            .status-card span {
+                display: block;
+                color: var(--muted);
+                font-size: 11px;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+            }
+            .status-card strong {
+                display: block;
+                overflow: hidden;
+                margin-top: 5px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-size: 13px;
+            }
+            .layout {
+                display: grid;
+                grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.75fr);
+                gap: 18px;
+                margin-top: 18px;
+                align-items: start;
+            }
+            .workflow {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 14px;
+            }
+            .card,
+            .side-panel {
+                border: 1px solid var(--line);
+                border-radius: 20px;
+                background: var(--panel);
+                box-shadow: 0 12px 38px rgba(0, 0, 0, 0.18);
+                backdrop-filter: blur(16px);
+            }
+            .card {
+                padding: 19px;
+            }
+            .card-head {
+                display: flex;
+                gap: 12px;
+                align-items: flex-start;
+                margin-bottom: 14px;
+            }
+            .step {
+                flex: 0 0 auto;
+                display: grid;
+                width: 30px;
+                height: 30px;
+                place-items: center;
+                border-radius: 9px;
+                color: #08251c;
+                background: var(--mint);
+                font-weight: 900;
+            }
+            .card h2 {
+                margin: 0;
+                font-size: 17px;
+                letter-spacing: -0.02em;
+            }
+            .card p {
+                margin: 3px 0 0;
+                color: var(--muted);
+                font-size: 12px;
+            }
+            .actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            button {
+                border: 1px solid rgba(112, 247, 189, 0.23);
+                border-radius: 11px;
+                padding: 9px 13px;
+                color: var(--text);
+                background: rgba(112, 247, 189, 0.08);
+                cursor: pointer;
+                transition: 0.18s ease;
+            }
+            button:hover {
+                border-color: rgba(112, 247, 189, 0.7);
+                background: rgba(112, 247, 189, 0.15);
+                transform: translateY(-1px);
+            }
+            button:disabled {
+                cursor: wait;
+                opacity: 0.45;
+                transform: none;
+            }
+            button.primary {
+                border-color: transparent;
+                color: #052419;
+                background: var(--mint);
+                font-weight: 800;
+            }
+            button.primary:hover {
+                background: #a1ffd7;
+            }
+            button.secondary {
+                border-color: rgba(143, 200, 255, 0.3);
+                background: rgba(143, 200, 255, 0.08);
+            }
+            button.warn {
+                border-color: rgba(255, 212, 121, 0.3);
+                background: rgba(255, 212, 121, 0.08);
+            }
+            label {
+                display: block;
+                margin-bottom: 6px;
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 700;
+            }
+            input,
+            textarea {
+                width: 100%;
+                border: 1px solid var(--line);
+                border-radius: 11px;
+                outline: none;
+                color: var(--text);
+                background: #071612;
+            }
+            input {
+                height: 40px;
+                padding: 0 12px;
+                margin-bottom: 11px;
+            }
+            textarea {
+                min-height: 118px;
+                padding: 11px;
+                resize: vertical;
+                font:
+                    12px/1.5 ui-monospace,
+                    SFMono-Regular,
+                    Menlo,
+                    Consolas,
+                    monospace;
+            }
+            input:focus,
+            textarea:focus {
+                border-color: var(--mint-2);
+                box-shadow: 0 0 0 3px rgba(39, 201, 139, 0.1);
+            }
+            details {
+                margin-top: 13px;
+                border-top: 1px solid var(--line);
+                padding-top: 11px;
+            }
+            summary {
+                color: var(--blue);
+                cursor: pointer;
+                font-size: 12px;
+            }
+            pre {
+                max-height: 310px;
+                overflow: auto;
+                margin: 10px 0 0;
+                padding: 13px;
+                border-radius: 12px;
+                color: #d8f9ec;
+                background: #050d0b;
+                white-space: pre-wrap;
+                word-break: break-all;
+                font:
+                    11px/1.55 ui-monospace,
+                    SFMono-Regular,
+                    Menlo,
+                    Consolas,
+                    monospace;
+            }
+            .side-panel {
+                position: sticky;
+                top: 16px;
+                padding: 20px;
+            }
+            .side-panel h2 {
+                margin: 0;
+                font-size: 18px;
+            }
+            .side-panel > p {
+                margin: 5px 0 15px;
+                color: var(--muted);
+                font-size: 12px;
+            }
+            .timeline {
+                display: grid;
+                gap: 8px;
+                max-height: 620px;
+                overflow: auto;
+            }
+            .event {
+                display: grid;
+                grid-template-columns: 9px 1fr auto;
+                gap: 9px;
+                align-items: center;
+                padding: 9px 0;
+                border-bottom: 1px solid rgba(170, 255, 222, 0.08);
+            }
+            .event-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: var(--mint);
+                box-shadow: 0 0 14px rgba(112, 247, 189, 0.6);
+            }
+            .event.error .event-dot {
+                background: var(--red);
+            }
+            .event.pending .event-dot {
+                background: var(--amber);
+            }
+            .event strong {
+                display: block;
+                font-size: 12px;
+            }
+            .event small {
+                color: var(--muted);
+            }
+            .event time {
+                color: var(--muted);
+                font-size: 10px;
+            }
+            .hint {
+                margin-top: 14px;
+                padding: 12px;
+                border-radius: 12px;
+                color: var(--muted);
+                background: rgba(112, 247, 189, 0.05);
+                font-size: 11px;
+            }
+            .result-ok summary {
+                color: var(--mint);
+            }
+            .result-error summary {
+                color: var(--red);
+            }
+            .full {
+                grid-column: 1 / -1;
+            }
+            @media (max-width: 980px) {
+                .layout {
+                    grid-template-columns: 1fr;
+                }
+                .side-panel {
+                    position: static;
+                }
+            }
+            @media (max-width: 680px) {
+                .shell {
+                    width: min(100% - 18px, 1500px);
+                    padding-top: 10px;
+                }
+                .hero {
+                    padding: 24px 19px;
+                    border-radius: 20px;
+                }
+                .status-grid,
+                .workflow {
+                    grid-template-columns: 1fr;
+                }
+                .hero-actions button {
+                    flex: 1 1 100%;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main class="shell">
+            <section class="hero">
+                <div class="eyebrow">WebVH Identity Lab · Independent PoC Server</div>
+                <h1>did:webvh VC / VP PoC Console</h1>
+                <p>
+                    example.com 도메인 기반 DID 생성과 로그 검증, W3C VCDM 2.0 VC 발급,
+                    Enveloped VC를 포함한 VP challenge 제출·검증, key rotation을 단계별로 확인합니다.
+                </p>
+      <div class="hero-actions">
+        <button id="run-all" class="primary">전체 E2E 실행</button>
+        <button id="new-session">새 테스트 세션</button>
+        <button id="health-check" class="secondary">서버 상태 확인</button>
+        <button id="api-doc" class="secondary">API Doc</button>
+                </div>
+                <div class="status-grid">
+                    <div class="status-card"><span>Server</span><strong id="status-server">확인 전</strong></div>
+                    <div class="status-card"><span>Holder Key</span><strong id="status-key">미생성</strong></div>
+                    <div class="status-card"><span>Holder DID</span><strong id="status-did">미생성</strong></div>
+                    <div class="status-card"><span>Credential</span><strong id="status-vc">미발급</strong></div>
+                    <div class="status-card"><span>Presentation</span><strong id="status-vp">미검증</strong></div>
+                </div>
+            </section>
+
+            <div class="layout">
+                <section class="workflow">
+                    <article class="card">
+                        <div class="card-head">
+                            <span class="step">1</span>
+                            <div>
+                                <h2>Holder Key 생성</h2>
+                                <p>Ed25519 키쌍을 만들고 공개키의 Multikey/JWK와 SS58 path ID를 확인합니다.</p>
+                            </div>
+                        </div>
+                        <div class="hint" style="color: var(--red)">
+                            PoC 전용: private JWK까지 결과에 표시됩니다. 운영 환경·공유 화면·로그에서는 절대 노출하면 안
+                            됩니다. keyId는 10분 동안 한 번만 DID genesis 생성에 사용할 수 있습니다.
+                        </div>
+                        <div class="actions"><button id="create-key" class="primary">키 생성</button></div>
+                        <details id="result-key">
+                            <summary>결과 보기</summary>
+                            <pre>아직 실행하지 않았습니다.</pre>
+                        </details>
+                    </article>
+
+                    <article class="card">
+                        <div class="card-head">
+                            <span class="step">2</span>
+                            <div>
+                                <h2>Holder DID 생성</h2>
+                                <p>공개키 SS58 식별자를 path로 사용하고 authentication key를 JsonWebKey로 공개합니다.</p>
+                            </div>
+                        </div>
+                        <div class="hint">형식: did:webvh:{SCID}:example.com:{SS58(initial-public-key)}</div>
+                        <div class="actions"><button id="create-did" class="primary">DID 생성</button></div>
+                        <details id="result-create">
+                            <summary>결과 보기</summary>
+                            <pre>아직 실행하지 않았습니다.</pre>
+                        </details>
+                    </article>
+
+                    <article class="card">
+                        <div class="card-head">
+                            <span class="step">3</span>
+                            <div>
+                                <h2>DID 조회 / WebVH 검증</h2>
+                                <p>공개 JSON Lines를 읽고 SCID, hash chain, update proof를 검증합니다.</p>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button id="resolve-did">저장 로그 Resolve</button>
+                            <button id="fetch-log">Public did.jsonl</button>
+                            <button id="validate-log" class="secondary">가져온 로그 검증</button>
+                        </div>
+                        <details id="result-resolve">
+                            <summary>결과 보기</summary>
+                            <pre>아직 실행하지 않았습니다.</pre>
+                        </details>
+                    </article>
+
+                    <article class="card">
+                        <div class="card-head">
+                            <span class="step">4</span>
+                            <div>
+                                <h2>VC 발급</h2>
+                                <p>VCDM 2.0 속성을 JWT 최상위에 배치하고 issuer JsonWebKey로 vc+jwt를 서명합니다.</p>
+                            </div>
+                        </div>
+                        <label for="claims">Mock credentialSubject claims</label>
+                        <textarea id="claims" spellcheck="false"></textarea>
+                        <div class="actions"><button id="issue-vc" class="primary">VC 발급</button></div>
+                        <details id="result-issue">
+                            <summary>결과 보기</summary>
+                            <pre>아직 실행하지 않았습니다.</pre>
+                        </details>
+                    </article>
+
+                    <article class="card">
+                        <div class="card-head">
+                            <span class="step">5</span>
+                            <div>
+                                <h2>VC 검증</h2>
+                                <p>issuer DID log, assertionMethod, JWT signature, validFrom/validUntil과 subject를 확인합니다.</p>
+                            </div>
+                        </div>
+                        <div class="actions"><button id="verify-vc">VC 검증</button></div>
+                        <details id="result-vc">
+                            <summary>결과 보기</summary>
+                            <pre>아직 실행하지 않았습니다.</pre>
+                        </details>
+                    </article>
+
+                    <article class="card">
+                        <div class="card-head">
+                            <span class="step">6</span>
+                            <div>
+                                <h2>VP 생성</h2>
+                                <p>
+                                    audience/nonce challenge와 EnvelopedVerifiableCredential을 포함해 vp+jwt로 서명합니다.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button id="create-challenge">Challenge 생성</button>
+                            <button id="create-vp" class="primary">VP 생성</button>
+                        </div>
+                        <details id="result-vp-create">
+                            <summary>결과 보기</summary>
+                            <pre>아직 실행하지 않았습니다.</pre>
+                        </details>
+                    </article>
+
+                    <article class="card">
+                        <div class="card-head">
+                            <span class="step">7</span>
+                            <div>
+                                <h2>VP 제출 / 검증</h2>
+                                <p>
+                                    nonce, audience, replay, holder signature, enveloped VC와 subject binding을
+                                    검증합니다.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="actions"><button id="verify-vp" class="primary">VP 제출·검증</button></div>
+                        <details id="result-vp-verify">
+                            <summary>결과 보기</summary>
+                            <pre>아직 실행하지 않았습니다.</pre>
+                        </details>
+                    </article>
+
+                    <article class="card">
+                        <div class="card-head">
+                            <span class="step">8</span>
+                            <div>
+                                <h2>DID Key Rotation</h2>
+                                <p>새 Ed25519 키쌍으로 공개키·update/authentication method를 교체합니다.</p>
+                            </div>
+                        </div>
+                        <div class="hint">
+                            회전 시 공개키와 #fragment는 변경되지만 DID·SCID·최초 공개키 기반 path는 유지됩니다.
+                        </div>
+                        <div class="actions">
+                            <button id="rotate-did" class="warn">키 회전</button>
+                            <button id="verify-after-rotation">회전 후 VP 재검증</button>
+                        </div>
+                        <details id="result-rotation">
+                            <summary>결과 보기</summary>
+                            <pre>아직 실행하지 않았습니다.</pre>
+                        </details>
+                    </article>
+
+                    <article class="card">
+                        <div class="card-head">
+                            <span class="step">9</span>
+                            <div>
+                                <h2>기타 WebVH 확인</h2>
+                                <p>issuer DID, 전체 identity 목록과 raw DID log를 확인합니다.</p>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button id="show-issuer">Issuer DID</button>
+                            <button id="list-dids">DID 목록</button>
+                            <button id="show-raw-log">Raw Log</button>
+                        </div>
+                        <details id="result-other">
+                            <summary>결과 보기</summary>
+                            <pre>아직 실행하지 않았습니다.</pre>
+                        </details>
+                    </article>
+
+                    <article class="card full">
+                        <div class="card-head">
+                            <span class="step">✓</span>
+                            <div>
+                                <h2>최종 상태</h2>
+                                <p>현재 브라우저 세션이 보유한 DID, VC, challenge, VP의 요약입니다.</p>
+                            </div>
+                        </div>
+                        <pre id="state-view">{}</pre>
+                    </article>
+                </section>
+
+                <aside class="side-panel">
+                    <h2>실행 타임라인</h2>
+                    <p>각 API 호출의 성공/실패를 시간순으로 표시합니다.</p>
+                    <div id="timeline" class="timeline"></div>
+                    <div class="hint">
+                        전체 E2E는 key 생성 → genesis → resolution → log validation → VCDM 2.0 VC → VP → rotation →
+                        rotated-key VP 순서로 실행합니다. 긴 JWT 원문은 각 단계의 결과에서 확인할 수 있습니다.
+                    </div>
+                </aside>
+            </div>
+        </main>
+
+        <script>
+            const initialClaims = {
+                name: 'WebVH PoC Holder',
+                agentName: 'WEBVH-PA-001',
+                participation: 'active',
+                accountUid: 'poc-user-001',
+                roles: ['example_holder'],
+            };
+
+            const state = {
+                pendingKey: null,
+                holder: null,
+                publicLog: null,
+                credential: null,
+                challenge: null,
+                presentation: null,
+                verification: null,
+                rotation: null,
+            };
+
+            const $ = (id) => document.getElementById(id);
+            const compact = (value, max = 46) => (value && value.length > max ? `${value.slice(0, max)}…` : value);
+
+            function resetSession() {
+                Object.assign(state, {
+                    pendingKey: null,
+                    holder: null,
+                    publicLog: null,
+                    credential: null,
+                    challenge: null,
+                    presentation: null,
+                    verification: null,
+                    rotation: null,
+                });
+                $('claims').value = JSON.stringify(initialClaims, null, 2);
+                $('timeline').replaceChildren();
+                document.querySelectorAll('details pre').forEach((pre) => {
+                    pre.textContent = '아직 실행하지 않았습니다.';
+                });
+                document.querySelectorAll('details').forEach((details) => {
+                    details.className = '';
+                    details.open = false;
+                });
+                updateState();
+                addEvent('새 테스트 세션', 'ready');
+            }
+
+            function updateState() {
+                $('status-key').textContent = state.pendingKey
+                    ? compact(state.pendingKey.publicKeyMultibase)
+                    : '미생성';
+                $('status-did').textContent = state.holder ? compact(state.holder.did) : '미생성';
+                $('status-vc').textContent = state.credential ? compact(state.credential.credentialId) : '미발급';
+                $('status-vp').textContent = state.verification?.verified ? '검증 성공' : '미검증';
+                const summary = {
+                    initialKeyId: state.pendingKey?.keyId ?? null,
+                    initialPublicKeyMultibase: state.pendingKey?.publicKeyMultibase ?? null,
+                    ss58PathId: state.pendingKey?.pathId ?? null,
+                    holderDid: state.holder?.did ?? null,
+                    currentPublicKeyMultibase: state.holder?.currentPublicKeyMultibase ?? null,
+                    logUrl: state.holder?.logUrl ?? null,
+                    versionId: state.holder?.versionId ?? null,
+                    logEntries: state.holder?.logEntries ?? null,
+                    credentialId: state.credential?.credentialId ?? null,
+                    challengeId: state.challenge?.id ?? null,
+                    presentationVerified: state.verification?.verified ?? false,
+                    rotation: state.rotation?.rotation ?? null,
+                };
+                $('state-view').textContent = JSON.stringify(summary, null, 2);
+            }
+
+            function addEvent(label, status = 'ok', detail = '') {
+                const item = document.createElement('div');
+                item.className = `event ${status === 'error' ? 'error' : status === 'pending' ? 'pending' : ''}`;
+                const dot = document.createElement('span');
+                dot.className = 'event-dot';
+                const text = document.createElement('div');
+                const strong = document.createElement('strong');
+                strong.textContent = label;
+                const small = document.createElement('small');
+                small.textContent = detail || status;
+                text.append(strong, small);
+                const time = document.createElement('time');
+                time.textContent = new Date().toLocaleTimeString('ko-KR', { hour12: false });
+                item.append(dot, text, time);
+                $('timeline').prepend(item);
+            }
+
+            function showResult(id, value, ok = true) {
+                const details = $(id);
+                details.className = ok ? 'result-ok' : 'result-error';
+                details.open = true;
+                details.querySelector('pre').textContent =
+                    typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+                updateState();
+            }
+
+            async function api(path, options = {}) {
+                const response = await fetch(path, {
+                    ...options,
+                    headers: options.body
+                        ? { 'content-type': 'application/json', ...(options.headers || {}) }
+                        : options.headers,
+                });
+                const text = await response.text();
+                let body;
+                try {
+                    body = JSON.parse(text);
+                } catch {
+                    body = text;
+                }
+                if (!response.ok) {
+                    const error = new Error(body?.error?.message || `${response.status} ${response.statusText}`);
+                    error.payload = body;
+                    throw error;
+                }
+                return body;
+            }
+
+            function requireValue(value, message) {
+                if (!value) throw new Error(message);
+                return value;
+            }
+
+            async function health() {
+                const result = await api('/health');
+                $('status-server').textContent = '정상 · issuer 준비';
+                showResult('result-other', result);
+                return result;
+            }
+
+            async function createKey() {
+                const result = await api('/api/keys', { method: 'POST' });
+                Object.assign(state, {
+                    pendingKey: result,
+                    holder: null,
+                    publicLog: null,
+                    credential: null,
+                    challenge: null,
+                    presentation: null,
+                    verification: null,
+                    rotation: null,
+                });
+                showResult('result-key', result);
+                return result;
+            }
+
+            async function createDid() {
+                const pendingKey = requireValue(state.pendingKey, '먼저 Holder Key를 생성하세요.');
+                const result = await api('/api/dids', {
+                    method: 'POST',
+                    body: JSON.stringify({ keyId: pendingKey.keyId }),
+                });
+                Object.assign(state, {
+                    holder: result,
+                    publicLog: null,
+                    credential: null,
+                    challenge: null,
+                    presentation: null,
+                    verification: null,
+                    rotation: null,
+                });
+                showResult('result-create', result);
+                return result;
+            }
+
+            async function resolveDid() {
+                const holder = requireValue(state.holder, '먼저 DID를 생성하세요.');
+                const result = await api(`/api/dids/resolve?did=${encodeURIComponent(holder.did)}`);
+                showResult('result-resolve', result);
+                return result;
+            }
+
+            async function fetchLog() {
+                const holder = requireValue(state.holder, '먼저 DID를 생성하세요.');
+                const response = await fetch(holder.logPath);
+                if (!response.ok) throw new Error(`DID log fetch failed: ${response.status}`);
+                const raw = await response.text();
+                state.publicLog = raw
+                    .trim()
+                    .split('\n')
+                    .filter(Boolean)
+                    .map((line) => JSON.parse(line));
+                showResult('result-resolve', {
+                    contentType: response.headers.get('content-type'),
+                    entries: state.publicLog.length,
+                    raw,
+                });
+                return state.publicLog;
+            }
+
+            async function validateLog() {
+                const holder = requireValue(state.holder, '먼저 DID를 생성하세요.');
+                if (!state.publicLog) await fetchLog();
+                const result = await api('/api/dids/validate', {
+                    method: 'POST',
+                    body: JSON.stringify({ did: holder.did, log: state.publicLog }),
+                });
+                showResult('result-resolve', result);
+                return result;
+            }
+
+            async function issueVc() {
+                const holder = requireValue(state.holder, '먼저 DID를 생성하세요.');
+                let claims;
+                try {
+                    claims = JSON.parse($('claims').value);
+                } catch {
+                    throw new Error('Mock claims JSON 형식을 확인하세요.');
+                }
+                const result = await api('/api/credentials', {
+                    method: 'POST',
+                    body: JSON.stringify({ holderDid: holder.did, claims }),
+                });
+                Object.assign(state, { credential: result, challenge: null, presentation: null, verification: null });
+                showResult('result-issue', result);
+                return result;
+            }
+
+            async function verifyVc() {
+                const credential = requireValue(state.credential, '먼저 VC를 발급하세요.');
+                const result = await api('/api/credentials/verify', {
+                    method: 'POST',
+                    body: JSON.stringify({ credentialJwt: credential.credentialJwt }),
+                });
+                showResult('result-vc', result);
+                return result;
+            }
+
+            async function createChallenge() {
+                const holder = requireValue(state.holder, '먼저 DID를 생성하세요.');
+                const result = await api('/api/presentations/challenges', {
+                    method: 'POST',
+                    body: JSON.stringify({ holderDid: holder.did }),
+                });
+                Object.assign(state, { challenge: result, presentation: null, verification: null });
+                showResult('result-vp-create', result);
+                return result;
+            }
+
+            async function createVp() {
+                const holder = requireValue(state.holder, '먼저 DID를 생성하세요.');
+                const credential = requireValue(state.credential, '먼저 VC를 발급하세요.');
+                if (!state.challenge) await createChallenge();
+                const result = await api('/api/presentations', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        challengeId: state.challenge.id,
+                        holderDid: holder.did,
+                        credentialJwt: credential.credentialJwt,
+                    }),
+                });
+                state.presentation = result;
+                showResult('result-vp-create', { challenge: state.challenge, ...result });
+                return result;
+            }
+
+            async function verifyVp() {
+                const challenge = requireValue(state.challenge, '먼저 challenge를 생성하세요.');
+                const presentation = requireValue(state.presentation, '먼저 VP를 생성하세요.');
+                const result = await api('/api/verifications', {
+                    method: 'POST',
+                    body: JSON.stringify({ challengeId: challenge.id, presentationJwt: presentation.presentationJwt }),
+                });
+                state.verification = result;
+                showResult('result-vp-verify', result);
+                return result;
+            }
+
+            async function rotateDid() {
+                const holder = requireValue(state.holder, '먼저 DID를 생성하세요.');
+                const result = await api('/api/dids/rotate', {
+                    method: 'POST',
+                    body: JSON.stringify({ did: holder.did }),
+                });
+                state.holder = result;
+                state.publicLog = null;
+                state.rotation = result;
+                Object.assign(state, { challenge: null, presentation: null, verification: null });
+                showResult('result-rotation', result);
+                return result;
+            }
+
+            async function verifyAfterRotation() {
+                requireValue(state.rotation, '먼저 DID key rotation을 실행하세요.');
+                await resolveDid();
+                await fetchLog();
+                await validateLog();
+                await createChallenge();
+                await createVp();
+                const verification = await verifyVp();
+                const result = {
+                    rotation: state.rotation.rotation,
+                    resolution: { versionId: state.holder.versionId, logEntries: state.holder.logEntries },
+                    rotatedKeyPresentation: verification,
+                };
+                showResult('result-rotation', result);
+                return result;
+            }
+
+            async function showIssuer() {
+                const result = await api('/api/issuer');
+                showResult('result-other', result);
+                return result;
+            }
+
+            async function listDids() {
+                const result = await api('/api/dids');
+                showResult('result-other', result);
+                return result;
+            }
+
+            async function showRawLog() {
+                await fetchLog();
+                showResult('result-other', state.publicLog);
+                return state.publicLog;
+            }
+
+            async function execute(label, fn) {
+                addEvent(label, 'pending', '실행 중');
+                try {
+                    const result = await fn();
+                    addEvent(label, 'ok', '성공');
+                    return result;
+                } catch (error) {
+                    addEvent(label, 'error', error.message);
+                    throw error;
+                }
+            }
+
+            async function runAll() {
+                resetSession();
+                await execute('서버 health', health);
+                await execute('Holder key 생성', createKey);
+                await execute('Holder DID 생성', createDid);
+                await execute('DID resolve', resolveDid);
+                await execute('Public did.jsonl 조회', fetchLog);
+                await execute('WebVH log 검증', validateLog);
+                await execute('VC 발급', issueVc);
+                await execute('VC 검증', verifyVc);
+                await execute('VP challenge', createChallenge);
+                await execute('VP 생성', createVp);
+                await execute('VP 제출·검증', verifyVp);
+                await execute('DID key rotation', rotateDid);
+                await execute('회전 후 새 key VP 검증', verifyAfterRotation);
+                addEvent('전체 E2E 완료', 'ok', `${state.holder.logEntries}개 DID log entries`);
+            }
+
+            function bind(id, label, fn) {
+                $(id).addEventListener('click', async () => {
+                    document.querySelectorAll('button').forEach((button) => {
+                        button.disabled = true;
+                    });
+                    try {
+                        await execute(label, fn);
+                    } catch (error) {
+                        showResult(
+                            id.startsWith('verify-vp') ? 'result-vp-verify' : 'result-other',
+                            error.payload || { error: error.message },
+                            false,
+                        );
+                    } finally {
+                        document.querySelectorAll('button').forEach((button) => {
+                            button.disabled = false;
+                        });
+                    }
+                });
+            }
+
+            $('run-all').addEventListener('click', async () => {
+                document.querySelectorAll('button').forEach((button) => {
+                    button.disabled = true;
+                });
+                try {
+                    await runAll();
+                } catch (error) {
+                    showResult('result-other', error.payload || { error: error.message }, false);
+                } finally {
+                    document.querySelectorAll('button').forEach((button) => {
+                        button.disabled = false;
+                    });
+                }
+            });
+    $('new-session').addEventListener('click', resetSession);
+    $('api-doc').addEventListener('click', () => { window.location.href = '/api-doc'; });
+            bind('health-check', '서버 health', health);
+            bind('create-key', 'Holder key 생성', createKey);
+            bind('create-did', 'Holder DID 생성', createDid);
+            bind('resolve-did', 'DID resolve', resolveDid);
+            bind('fetch-log', 'Public did.jsonl 조회', fetchLog);
+            bind('validate-log', 'WebVH log 검증', validateLog);
+            bind('issue-vc', 'VC 발급', issueVc);
+            bind('verify-vc', 'VC 검증', verifyVc);
+            bind('create-challenge', 'VP challenge', createChallenge);
+            bind('create-vp', 'VP 생성', createVp);
+            bind('verify-vp', 'VP 제출·검증', verifyVp);
+            bind('rotate-did', 'DID key rotation', rotateDid);
+            bind('verify-after-rotation', '회전 후 새 key VP 검증', verifyAfterRotation);
+            bind('show-issuer', 'Issuer DID 조회', showIssuer);
+            bind('list-dids', 'DID 목록 조회', listDids);
+            bind('show-raw-log', 'Raw DID log 조회', showRawLog);
+
+            resetSession();
+            health()
+                .then(() => addEvent('서버 자동 확인', 'ok'))
+                .catch((error) => {
+                    $('status-server').textContent = '연결 실패';
+                    addEvent('서버 자동 확인', 'error', error.message);
+                });
+        </script>
+    </body>
+</html>

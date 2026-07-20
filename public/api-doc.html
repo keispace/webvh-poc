@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>API Docs · WebVH VC/VP PoC</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #effff9;
+      --forest: #70f7bd;
+      --forest-deep: #07100f;
+      --soft: #98b7ad;
+      --paper: #0f1e1c;
+      --cream: #102622;
+      --line: rgba(170,255,222,.15);
+      --mint: #70f7bd;
+      --mint-pale: rgba(112,247,189,.09);
+      --lime: #70f7bd;
+      --red: #ff8f93;
+      --blue: #8fc8ff;
+      --amber: #ffd479;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: radial-gradient(circle at 15% 10%,rgba(39,201,139,.11),transparent 34rem),radial-gradient(circle at 90% 5%,rgba(91,149,255,.09),transparent 30rem),var(--forest-deep); font: 14px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button, textarea { font: inherit; }
+    .header { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; height: 70px; padding: 0 clamp(22px, 6vw, 90px); border-bottom: 1px solid var(--line); background: rgba(7,16,15,.9); backdrop-filter: blur(16px); }
+    .brand { color: var(--ink); font-size: 17px; font-weight: 850; letter-spacing: -.03em; text-decoration: none; }
+    .brand span { margin-left: 10px; padding-left: 10px; border-left: 1px solid var(--line); color: var(--forest); font: 800 9px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+    .header nav { display: flex; align-items: center; gap: 22px; }
+    .header a { color: var(--soft); font-size: 12px; font-weight: 750; text-decoration: none; }
+    .header a:hover { color: var(--forest); }
+    .hero { display: grid; grid-template-columns: minmax(0,1fr) minmax(300px,400px); gap: clamp(40px,8vw,110px); padding: clamp(76px,9vw,125px) clamp(24px,9vw,140px) 88px; border-bottom: 1px solid var(--line); background: radial-gradient(circle at 78% 28%,rgba(112,247,189,.12),transparent 27%),linear-gradient(145deg,rgba(16,38,34,.92),rgba(7,16,15,.96)); }
+    .eyebrow, .section-heading > p { margin: 0 0 18px; color: var(--forest); font: 800 10px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+    .hero h1 { margin: 0; color: var(--ink); font: 400 clamp(52px,7vw,88px)/.95 Georgia,"Times New Roman",serif; letter-spacing: -.055em; }
+    .hero h1 em { color: var(--forest); font-weight: 400; }
+    .lead { max-width: 720px; margin: 28px 0 0; color: var(--soft); font-size: 15px; line-height: 1.8; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
+    .hero-actions button, .hero-actions a { border: 0; border-radius: 9px; padding: 13px 17px; cursor: pointer; color: var(--forest); background: transparent; font-size: 12px; font-weight: 800; text-decoration: none; }
+    .hero-actions .primary { color: #052419; background: var(--forest); }
+    .summary { align-self: center; padding: 25px; border: 1px solid var(--line); border-radius: 18px; background: rgba(15,30,28,.9); box-shadow: 0 28px 70px rgba(0,0,0,.28); }
+    .summary > span { color: var(--soft); font: 800 9px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+    .summary dl { margin: 17px 0 0; }
+    .summary dl > div { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-top: 1px solid var(--line); }
+    .summary dt { color: var(--soft); font-size: 11px; }
+    .summary dd { margin: 0; color: var(--forest); font: 800 15px var(--mono); }
+    .context { display: grid; grid-template-columns: minmax(240px,.7fr) minmax(0,1.3fr); gap: 60px; padding: 46px clamp(24px,9vw,140px); color: var(--ink); border-bottom: 1px solid var(--line); background: #102622; }
+    .context h2 { margin: 0 0 9px; font-size: 27px; letter-spacing: -.04em; }
+    .context p { margin: 0; color: #dbe9e2; font-size: 12px; }
+    .context pre { max-height: 210px; overflow: auto; margin: 0; padding: 15px; border: 1px solid var(--line); border-radius: 10px; color: var(--lime); background: #050d0b; font: 11px/1.55 var(--mono); white-space: pre-wrap; word-break: break-all; }
+    .docs-section { padding: 86px clamp(20px,8vw,120px); }
+    .docs-section.alt { background: rgba(16,38,34,.42); }
+    .section-heading { max-width: 1180px; margin: 0 auto 38px; }
+    .section-heading h2 { margin: 0; font: 400 clamp(38px,5vw,58px) Georgia,"Times New Roman",serif; letter-spacing: -.045em; }
+    .section-heading span { display: block; margin-top: 14px; color: var(--soft); font-size: 13px; }
+    .operation-list { display: grid; gap: 24px; max-width: 1180px; margin: 0 auto; }
+    .operation { padding: clamp(22px,4vw,36px); border: 1px solid var(--line); border-radius: 16px; background: rgba(15,30,28,.88); box-shadow: 0 15px 40px rgba(0,0,0,.18); scroll-margin-top: 90px; backdrop-filter: blur(12px); }
+    .operation-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .route { display: flex; align-items: center; gap: 13px; min-width: 0; }
+    .route code { overflow: hidden; color: var(--ink); font: 750 14px var(--mono); text-overflow: ellipsis; white-space: nowrap; }
+    .method { min-width: 54px; padding: 7px 8px; border-radius: 6px; color: white; font: 900 9px var(--mono); letter-spacing: .06em; text-align: center; }
+    .get { color: #071b2a; background: var(--blue); } .post { color: #052419; background: var(--mint); }
+    .badges { display: flex; gap: 7px; }
+    .badge { padding: 5px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--soft); font: 8px var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+    .badge.write { border-color: rgba(255,212,121,.3); color: var(--amber); background: rgba(255,212,121,.07); }
+    .operation h3 { margin: 24px 0 7px; font-size: 23px; letter-spacing: -.035em; }
+    .operation > p { margin: 0; color: var(--soft); font-size: 13px; }
+    .contract { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 23px 0; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: var(--line); }
+    .contract > div { padding: 15px; background: #102622; }
+    .contract small { display: block; margin-bottom: 5px; color: var(--soft); font: 800 8px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    .contract strong { color: var(--ink); font-size: 12px; }
+    .explorer { margin-top: 24px; padding: 21px; border: 1px solid var(--line); border-radius: 13px; background: rgba(5,13,11,.42); }
+    .explorer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+    .explorer-head span { color: var(--forest); font: 800 9px var(--mono); letter-spacing: .09em; text-transform: uppercase; }
+    .explorer-head button, .run-flow { border: 0; border-radius: 8px; padding: 10px 14px; color: #052419; background: var(--forest); cursor: pointer; font-size: 11px; font-weight: 800; }
+    .explorer-head button:disabled, .run-flow:disabled { cursor: wait; opacity: .5; }
+    .try-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field label { display: block; margin-bottom: 6px; color: var(--soft); font-size: 10px; font-weight: 750; }
+    textarea, .response { width: 100%; min-height: 165px; max-height: 360px; overflow: auto; margin: 0; padding: 13px; border: 1px solid var(--line); border-radius: 9px; outline: none; color: #d8f9ec; background: #050d0b; font: 11px/1.55 var(--mono); resize: vertical; white-space: pre-wrap; word-break: break-all; }
+    textarea:focus { border-color: var(--forest); box-shadow: 0 0 0 3px rgba(22,75,58,.08); }
+    .response.empty { color: var(--soft); }
+    .response.error { color: var(--red); border-color: rgba(255,143,147,.4); background: rgba(255,143,147,.05); }
+    .response.ok { color: var(--mint); border-color: rgba(112,247,189,.35); }
+    .response-meta { display: flex; gap: 8px; margin-bottom: 6px; min-height: 20px; color: var(--soft); font: 9px var(--mono); }
+    .example { margin-top: 15px; }
+    .example summary { color: var(--forest); cursor: pointer; font-size: 11px; font-weight: 800; }
+    .example pre { max-height: 280px; overflow: auto; padding: 13px; border-radius: 9px; color: #d9f7e8; background: #10261f; font: 10px/1.55 var(--mono); white-space: pre-wrap; word-break: break-all; }
+    .footer { padding: 38px 24px; color: var(--soft); border-top: 1px solid var(--line); background: #050d0b; text-align: center; font-size: 11px; }
+    .toast { position: fixed; right: 22px; bottom: 22px; z-index: 30; max-width: 420px; padding: 13px 16px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); background: #102622; box-shadow: 0 15px 45px rgba(0,0,0,.35); font-size: 11px; opacity: 0; pointer-events: none; transform: translateY(12px); transition: .2s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 820px) { .hero,.context,.try-grid { grid-template-columns: 1fr; } .header nav a:not(:last-child) { display:none; } .operation-heading { align-items:flex-start; flex-direction:column; } .contract { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a class="brand" href="/">WebVH VC/VP <span>API Lab</span></a>
+    <nav aria-label="API 문서 탐색">
+      <a href="#identity">Identity API</a>
+      <a href="#credential">Credential API</a>
+      <a href="#presentation">Presentation API</a>
+      <a href="/">PoC Console</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Same-origin interactive reference</p>
+        <h1>WebVH API를<br><em>직접 검증합니다.</em></h1>
+        <p class="lead">독립 PoC 서버가 구현한 DID key 생성, WebVH history, VC 발급과 VP 검증 계약입니다. 요청 예제를 편집하고 실제 API를 호출해 응답과 공유 테스트 컨텍스트를 확인할 수 있습니다.</p>
+        <div class="hero-actions">
+          <button class="primary" id="run-flow">권장 E2E 호출</button>
+          <a href="#identity">API 살펴보기</a>
+          <a href="/">Console로 돌아가기</a>
+        </div>
+      </div>
+      <aside class="summary">
+        <span>Current contract</span>
+        <dl>
+          <div><dt>Documented operations</dt><dd id="operation-count">16</dd></div>
+          <div><dt>Authentication</dt><dd>PoC / None</dd></div>
+          <div><dt>Media types</dt><dd>JSON · JSONL</dd></div>
+          <div><dt>API origin</dt><dd>Same origin</dd></div>
+        </dl>
+      </aside>
+    </section>
+
+    <section class="context">
+      <div><p class="eyebrow" style="color:var(--mint)">Shared explorer context</p><h2>응답이 다음 요청을 채웁니다.</h2><p>키 생성부터 VP 검증까지 결과의 식별자와 JWT를 브라우저 메모리에만 연결합니다. 새로고침하면 초기화됩니다.</p></div>
+      <pre id="context-view">{}</pre>
+    </section>
+
+    <div id="docs-root"></div>
+  </main>
+  <footer class="footer">Independent did:webvh VC/VP PoC · Private JWK is exposed for this PoC only.</footer>
+  <div id="toast" class="toast" role="status"></div>
+
+  <script>
+    const sampleDid = 'did:webvh:{SCID}:example.com:{SS58(initial-public-key)}';
+    const sampleIssuerDid = 'did:webvh:{SCID}:example.com:issuer:poc';
+    const sampleJwt = 'eyJhbGciOiJFZERTQSIsInR5cCI6InZjK2p3dCIsImN0eSI6InZjIn0...';
+    const operations = [
+      { id:'health', group:'System', method:'GET', path:'/health', summary:'서버 및 issuer 준비 상태', description:'PoC 서버가 요청을 받을 수 있는지와 bootstrap된 issuer DID를 확인합니다.', requestText:'Body 없음', responseText:'200 · 서버 상태와 issuer DID', body:null, response:{status:'ok',issuerDid:sampleIssuerDid} },
+      { id:'issuer', group:'System', method:'GET', path:'/api/issuer', summary:'Issuer WebVH identity 조회', description:'VC 서명에 사용하는 issuer DID, DID Document, assertionMethod와 현재 공개키를 반환합니다.', requestText:'Body 없음', responseText:'200 · public issuer identity', body:null, response:{role:'issuer',pathId:'poc',did:sampleIssuerDid,currentKid:`${sampleIssuerDid}#key`,currentPublicKeyMultibase:'z6Mk...',logEntries:1} },
+      { id:'dids.list', group:'System', method:'GET', path:'/api/dids', summary:'저장된 identity 목록', description:'현재 file store에 저장된 issuer와 holder identity의 public projection을 조회합니다.', requestText:'Body 없음', responseText:'200 · identity public projection array', body:null, response:{items:[{role:'holder',did:sampleDid,logEntries:1}]} },
+      { id:'demo', group:'System', method:'POST', path:'/api/demo/run', summary:'전체 DID → VC → VP 데모', description:'서버 내부에서 key-first DID 생성부터 VC/VP 검증까지 한 요청으로 실행합니다.', requestText:'Body 없음', responseText:'200 · key, DID resolution, VC와 VP verification', body:null, impact:'write', response:{key:{pathId:'5...'},did:{did:sampleDid},credential:{verified:true},presentation:{verification:{verified:true}}} },
+
+      { id:'keys.create', group:'Identity', method:'POST', path:'/api/keys', summary:'Holder Ed25519 key 생성', description:'Ed25519 key pair를 만들고 public Multikey/JWK, private JWK, SS58 path와 10분 one-time keyId를 반환합니다. private JWK 노출은 PoC 전용입니다.', requestText:'Body 없음', responseText:'201 · pending holder key material', body:null, impact:'write', response:{keyId:'uuid',algorithm:'Ed25519',publicKeyMultibase:'z6Mk...',publicJwk:{kty:'OKP',crv:'Ed25519',alg:'EdDSA',kid:'thumbprint',x:'...'},privateJwk:{kty:'OKP',crv:'Ed25519',alg:'EdDSA',kid:'thumbprint',x:'...',d:'...'},ss58Prefix:42,pathId:'5...',privateKeyReturned:true} },
+      { id:'dids.create', group:'Identity', method:'POST', path:'/api/dids', summary:'Holder WebVH genesis 생성', description:'pending keyId를 한 번 소비하여 최초 공개키 SS58 path 기반 DID를 만들고 authentication method는 VCDM 2.0 JOSE 검증용 JsonWebKey로 공개합니다.', requestText:'JSON · keyId 필수', responseText:'201 · holder identity와 DID Document', body:{keyId:'$keyId'}, impact:'write', response:{role:'holder',pathId:'5...',did:sampleDid,logUrl:'https://example.com/5.../did.jsonl',currentPublicKeyMultibase:'z6Mk...',pathDerivedFromInitialPublicKey:true} },
+      { id:'dids.resolve', group:'Identity', method:'GET', path:'/api/dids/resolve?did={did}', summary:'저장 DID resolve', description:'저장한 로그를 genesis부터 검증하고 최신 DID Document와 SCID/version metadata를 반환합니다.', requestText:'Query · did 필수', responseText:'200 · verified resolution result', body:null, endpoint:ctx=>`/api/dids/resolve?did=${encodeURIComponent(requireContext(ctx,'holderDid'))}`, response:{did:sampleDid,didDocument:{id:sampleDid},didDocumentMetadata:{scid:'Qm...',versionId:'1-Qm...',deactivated:false},verified:true} },
+      { id:'log.holder', group:'Identity', method:'GET', path:'/{pathId}/did.jsonl', summary:'Public holder DID log', description:'DID→HTTPS 변환 위치에서 append-only JSON Lines를 text/jsonl로 제공합니다.', requestText:'Path · pathId 필수', responseText:'200 text/jsonl · DID log entries', body:null, endpoint:ctx=>`/${encodeURIComponent(requireContext(ctx,'pathId'))}/did.jsonl`, response:'{"versionId":"1-Qm...","parameters":{"scid":"Qm..."},"state":{},"proof":[]}' },
+      { id:'log.issuer', group:'Identity', method:'GET', path:'/issuer/{slug}/did.jsonl', summary:'Public issuer DID log', description:'Issuer의 append-only WebVH log를 JSON Lines로 제공합니다.', requestText:'Path · issuer slug', responseText:'200 text/jsonl · issuer DID log', body:null, endpoint:ctx=>ctx.issuerLogPath||'/issuer/poc/did.jsonl', response:'{"versionId":"1-Qm...","state":{"id":"did:webvh:...:issuer:poc"}}' },
+      { id:'dids.validate', group:'Identity', method:'POST', path:'/api/dids/validate', summary:'Client-supplied DID log 검증', description:'전달받은 log의 SCID, entry hash chain, update proof와 requested DID 일치를 검증합니다.', requestText:'JSON · did, log[] 필수', responseText:'200 verified 또는 400 fail-closed', body:{did:'$holderDid',log:'$didLog'}, response:{did:sampleDid,didDocumentMetadata:{versionId:'1-Qm...'},verified:true} },
+      { id:'dids.rotate', group:'Identity', method:'POST', path:'/api/dids/rotate', summary:'Holder key rotation', description:'새 Ed25519 key pair로 update/authentication key를 교체합니다. DID·SCID·path는 유지하고 공개키·#fragment·versionId는 변경합니다.', requestText:'JSON · did 필수', responseText:'200 · updated identity와 rotation diff', body:{did:'$holderDid'}, impact:'write', response:{did:sampleDid,logEntries:2,rotation:{previousKid:'...#old',currentKid:'...#new',previousPublicKeyMultibase:'z6Mk-old',currentPublicKeyMultibase:'z6Mk-new',didChanged:false,pathChanged:false,versionId:'2-Qm...'}} },
+
+      { id:'credentials.issue', group:'Credential', method:'POST', path:'/api/credentials', summary:'VCDM 2.0 Example VC 발급', description:'WebVH issuer JsonWebKey로 VCDM 2.0 속성을 JWT 최상위에 둔 WebVHExampleCredential vc+jwt를 발급합니다. vc 중첩 claim은 사용하지 않으며 목업 type/claim은 undefined-terms/v2 context로 표시합니다.', requestText:'JSON · holderDid, claims', responseText:'201 · credentialJwt와 credentialId', body:{holderDid:'$holderDid',claims:{name:'API Doc Holder',label:'WEBVH-HOLDER-DOC',status:'active'}}, impact:'write', response:{credentialJwt:sampleJwt,credentialId:'urn:uuid:...',issuerDid:sampleIssuerDid,type:'WebVHExampleCredential'} },
+      { id:'credentials.verify', group:'Credential', method:'POST', path:'/api/credentials/verify', summary:'VC 단독 검증', description:'issuer DID log, JsonWebKey assertionMethod, JWT signature, validFrom/validUntil과 credentialSubject.id를 검증합니다.', requestText:'JSON · credentialJwt 필수', responseText:'200 verified 또는 400 reject', body:{credentialJwt:'$credentialJwt'}, response:{verified:true,credentialId:'urn:uuid:...',issuerDid:sampleIssuerDid,subjectDid:sampleDid,credentialType:['VerifiableCredential','WebVHExampleCredential']} },
+
+      { id:'challenges.create', group:'Presentation', method:'POST', path:'/api/presentations/challenges', summary:'VP challenge 생성', description:'예상 holder DID에 바인딩된 audience, nonce, TTL과 one-time challengeId를 발급합니다.', requestText:'JSON · holderDid 필수', responseText:'201 · challengeId, audience, nonce, expiresAt', body:{holderDid:'$holderDid'}, impact:'write', response:{id:'uuid',expectedHolderDid:sampleDid,audience:'https://example.com/verifier',nonce:'...',expiresAt:'...'} },
+      { id:'presentations.create', group:'Presentation', method:'POST', path:'/api/presentations', summary:'VCDM 2.0 Holder VP 생성', description:'내장 holder가 nonce/audience와 data:application/vc+jwt EnvelopedVerifiableCredential을 포함한 vp+jwt에 JsonWebKey로 서명합니다.', requestText:'JSON · challengeId, holderDid, credentialJwt', responseText:'201 · presentationJwt', body:{challengeId:'$challengeId',holderDid:'$holderDid',credentialJwt:'$credentialJwt'}, impact:'write', response:{presentationJwt:'eyJhbGciOiJFZERTQSIsInR5cCI6InZwK2p3dCIsImN0eSI6InZwIn0...'} },
+      { id:'verifications.create', group:'Presentation', method:'POST', path:'/api/verifications', summary:'VP 제출 및 검증', description:'challenge, audience, nonce, replay, holder DID log/signature, enveloped VC와 subject binding을 검증하고 challenge를 소비합니다.', requestText:'JSON · challengeId, presentationJwt', responseText:'200 verified 또는 4xx reject', body:{challengeId:'$challengeId',presentationJwt:'$presentationJwt'}, impact:'write', response:{verified:true,holderDid:sampleDid,checks:{challenge:true,audience:true,nonce:true,replay:true,holderDidLog:true,presentationSignature:true,issuerDidLog:true,credentialSignature:true,subjectBinding:true}} }
+    ];
+
+    const groups = [
+      {id:'system',name:'System & Demo',source:'System',description:'서버 상태, issuer와 전체 저장 identity 및 단일 요청 E2E를 확인합니다.'},
+      {id:'identity',name:'Identity API',source:'Identity',description:'key-first holder 생성, WebVH resolve/validate, public JSONL과 key rotation 계약입니다.'},
+      {id:'credential',name:'Credential API',source:'Credential',description:'VCDM 2.0 vc+jwt 발급과 JsonWebKey 기반 단독 검증 계약입니다.'},
+      {id:'presentation',name:'Presentation API',source:'Presentation',description:'EnvelopedVerifiableCredential을 포함한 VCDM 2.0 VP 생성과 one-time 검증 계약입니다.'}
+    ];
+    const context = {};
+    const responses = new Map();
+    let toastTimer;
+
+    function requireContext(ctx,key){ if(!ctx[key]) throw new Error(`${key} 값이 없습니다. 선행 API를 먼저 실행하세요.`); return ctx[key]; }
+    function json(value){ return typeof value==='string'?value:JSON.stringify(value,null,2); }
+    function resolveTokens(value){
+      if(Array.isArray(value)) return value.map(resolveTokens);
+      if(value&&typeof value==='object') return Object.fromEntries(Object.entries(value).map(([k,v])=>[k,resolveTokens(v)]));
+      if(typeof value!=='string') return value;
+      const exact=value.match(/^\$([A-Za-z][A-Za-z0-9]*)$/);
+      if(exact) return requireContext(context,exact[1]);
+      return value.replace(/\$([A-Za-z][A-Za-z0-9]*)/g,(_,key)=>String(requireContext(context,key)));
+    }
+    function toast(message){ const el=document.getElementById('toast'); el.textContent=message; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2600); }
+    function updateContext(){ document.getElementById('context-view').textContent=json(context); }
+    function capture(operation,body,contentType){
+      if(!body||typeof body!=='object') return;
+      if(operation.id==='keys.create'){ context.keyId=body.keyId; context.pathId=body.pathId; context.initialPublicKeyMultibase=body.publicKeyMultibase; }
+      if(operation.id==='dids.create'||operation.id==='dids.rotate'){ context.holderDid=body.did; context.pathId=body.pathId; context.holderLogPath=body.logPath; context.currentPublicKeyMultibase=body.currentPublicKeyMultibase; }
+      if(operation.id==='issuer'){ context.issuerDid=body.did; context.issuerLogPath=body.logPath; }
+      if(operation.id==='credentials.issue'){ context.credentialJwt=body.credentialJwt; context.credentialId=body.credentialId; }
+      if(operation.id==='challenges.create'){ context.challengeId=body.id; context.nonce=body.nonce; }
+      if(operation.id==='presentations.create') context.presentationJwt=body.presentationJwt;
+      if(operation.id==='demo'){ context.holderDid=body.did?.did; context.pathId=body.did?.pathId; context.credentialJwt=body.credential?.credentialJwt; context.presentationJwt=body.presentation?.presentationJwt; }
+      if(contentType?.includes('text/jsonl')&&Array.isArray(body)) context.didLog=body;
+      updateContext();
+    }
+    async function responseBody(response){
+      const raw=await response.text();
+      if(!raw) return null;
+      if((response.headers.get('content-type')||'').includes('text/jsonl')) return raw.trim().split('\n').filter(Boolean).map(line=>JSON.parse(line));
+      try{return JSON.parse(raw)}catch{return raw}
+    }
+    function bodyEditorValue(operation){ return operation.body===null?'':json(operation.body); }
+    function requestPreview(operation,body){ const endpoint=operation.endpoint?operation.endpoint(context):operation.path; return {method:operation.method,endpoint,...(body!==undefined?{body}: {})}; }
+    async function executeOperation(operation,announce=true){
+      const button=document.querySelector(`[data-run="${operation.id}"]`);
+      const output=document.querySelector(`[data-response="${operation.id}"]`);
+      const meta=document.querySelector(`[data-meta="${operation.id}"]`);
+      button.disabled=true; button.textContent='호출 중'; output.className='response empty'; output.textContent='요청 중…'; meta.textContent='';
+      try{
+        let body;
+        if(operation.body!==null){ const raw=document.querySelector(`[data-body="${operation.id}"]`).value; body=resolveTokens(JSON.parse(raw)); }
+        const endpoint=operation.endpoint?operation.endpoint(context):operation.path;
+        const started=performance.now();
+        const response=await fetch(endpoint,{method:operation.method,cache:'no-store',headers:body!==undefined?{'content-type':'application/json'}:undefined,body:body!==undefined?JSON.stringify(body):undefined});
+        const contentType=response.headers.get('content-type')||'';
+        const parsed=await responseBody(response);
+        const elapsed=Math.round(performance.now()-started);
+        meta.textContent=`${response.status} ${response.statusText} · ${elapsed}ms · ${contentType||'no content-type'}`;
+        output.className=`response ${response.ok?'ok':'error'}`;
+        output.textContent=json({request:requestPreview(operation,body),response:parsed});
+        responses.set(operation.id,{response,body:parsed});
+        if(response.ok) capture(operation,parsed,contentType);
+        if(!response.ok) throw new Error(`${operation.method} ${operation.path}: ${response.status}`);
+        if(announce) toast(`${operation.method} ${operation.path} 성공`);
+        return parsed;
+      }catch(error){ output.className='response error'; if(output.textContent==='요청 중…') output.textContent=json({error:error.message}); throw error; }
+      finally{ button.disabled=false; button.textContent='직접 호출'; }
+    }
+    function renderOperation(operation){
+      const request=operation.body===null?'Body 없음':json(operation.body);
+      return `<article class="operation" id="${operation.id}">
+        <div class="operation-heading"><div class="route"><span class="method ${operation.method.toLowerCase()}">${operation.method}</span><code>${operation.path}</code></div><div class="badges"><span class="badge ${operation.impact?'write':''}">${operation.impact||'read'}</span><span class="badge">same origin</span></div></div>
+        <h3>${operation.summary}</h3><p>${operation.description}</p>
+        <div class="contract"><div><small>Request</small><strong>${operation.requestText}</strong></div><div><small>Response</small><strong>${operation.responseText}</strong></div></div>
+        <section class="explorer"><div class="explorer-head"><span>Same-origin API explorer</span><button data-run="${operation.id}">직접 호출</button></div>
+          <div class="try-grid"><div class="field"><label>Request body template · $token은 공유 context에서 치환</label><textarea data-body="${operation.id}" ${operation.body===null?'readonly':''}>${request}</textarea></div><div class="field"><label>Actual response</label><div class="response-meta" data-meta="${operation.id}"></div><pre class="response empty" data-response="${operation.id}">아직 호출하지 않았습니다.</pre></div></div>
+        </section>
+        <details class="example"><summary>Expected response example</summary><pre>${json(operation.response)}</pre></details>
+      </article>`;
+    }
+    function render(){
+      document.getElementById('operation-count').textContent=String(operations.length);
+      document.getElementById('docs-root').innerHTML=groups.map((group,index)=>`<section class="docs-section ${index%2?'alt':''}" id="${group.id}"><div class="section-heading"><p>${group.name}</p><h2>${group.name}</h2><span>${group.description}</span></div><div class="operation-list">${operations.filter(op=>op.group===group.source).map(renderOperation).join('')}</div></section>`).join('');
+      document.querySelectorAll('[data-run]').forEach(button=>button.addEventListener('click',()=>{ const operation=operations.find(op=>op.id===button.dataset.run); executeOperation(operation).catch(error=>toast(error.message)); }));
+      updateContext();
+    }
+    async function runRecommendedFlow(){
+      const button=document.getElementById('run-flow'); button.disabled=true; button.textContent='E2E 실행 중'; Object.keys(context).forEach(key=>delete context[key]); updateContext();
+      const sequence=['health','issuer','keys.create','dids.create','dids.resolve','log.holder','dids.validate','credentials.issue','credentials.verify','challenges.create','presentations.create','verifications.create','dids.rotate','challenges.create','presentations.create','verifications.create'];
+      try{ for(const id of sequence) await executeOperation(operations.find(op=>op.id===id),false); toast('권장 E2E API 호출이 모두 통과했습니다.'); }
+      catch(error){ toast(`E2E 중단: ${error.message}`); }
+      finally{ button.disabled=false; button.textContent='권장 E2E 호출'; }
+    }
+    render();
+    document.getElementById('run-flow').addEventListener('click',runRecommendedFlow);
+  </script>
+</body>
+</html>
