@@ -1,5 +1,5 @@
-import { createApp } from './app.js';
-import { loadConfig } from './config.js';
+import { createApp } from './webvh-app';
+import { loadConfig } from './config';
 
 const { app } = await createApp(loadConfig());
 try {

@@ -1,30 +1,81 @@
+type JsonPrimitive = string | number | boolean | null;
+type JsonValue = JsonPrimitive | JsonObject | JsonValue[];
+
+export interface JsonObject {
+  [key: string]: JsonValue;
+}
+
+type DataIntegrityProofPurpose =
+  | 'authentication'
+  | 'assertionMethod'
+  | 'keyAgreement'
+  | 'capabilityInvocation'
+  | 'capabilityDelegation';
+
 export interface VerificationMethod {
   id?: string;
   type: string;
   controller?: string;
   publicKeyMultibase?: string;
-  publicKeyJwk?: Ed25519PublicJwk;
-  purpose?: 'authentication' | 'assertionMethod';
+  secretKeyMultibase?: string;
+  purpose?: DataIntegrityProofPurpose;
+  publicKeyJwk?: JsonObject;
+  use?: string;
 }
 
 export interface DIDDocument {
-  '@context'?: unknown;
+  '@context'?: string | string[] | object | object[];
   id?: string;
   controller?: string | string[];
   alsoKnownAs?: string[];
   authentication?: string[];
   assertionMethod?: string[];
+  keyAgreement?: string[];
+  capabilityInvocation?: string[];
+  capabilityDelegation?: string[];
   verificationMethod?: VerificationMethod[];
-  service?: unknown[];
-  [key: string]: unknown;
+  service?: Array<{
+    id?: string;
+    type: string | string[];
+    serviceEndpoint?: string | string[] | JsonValue;
+    [key: string]: unknown;
+  }>;
+}
+
+interface DataIntegrityProof {
+  id?: string;
+  type: 'DataIntegrityProof';
+  cryptosuite: 'eddsa-jcs-2022';
+  verificationMethod: string;
+  created: string;
+  proofValue: string;
+  proofPurpose: DataIntegrityProofPurpose;
+}
+
+interface WitnessEntry {
+  id: string;
+}
+
+interface WitnessParameter {
+  threshold?: number;
+  witnesses?: WitnessEntry[];
 }
 
 export interface DIDLogEntry {
   versionId: string;
   versionTime: string;
-  parameters: Record<string, unknown>;
+  parameters: {
+    method?: string;
+    scid?: string;
+    updateKeys?: string[];
+    nextKeyHashes?: string[];
+    portable?: boolean;
+    witness?: WitnessParameter;
+    watchers?: string[] | null;
+    deactivated?: boolean;
+  };
   state: DIDDocument;
-  proof?: Array<Record<string, unknown>>;
+  proof?: DataIntegrityProof[];
 }
 
 export type DIDLog = DIDLogEntry[];
@@ -48,7 +99,7 @@ export interface StoredIdentity {
   updatedAt?: string;
 }
 
-export interface Ed25519PublicJwk {
+export interface Ed25519PublicJwk extends JsonObject {
   kty: 'OKP';
   crv: 'Ed25519';
   x: string;

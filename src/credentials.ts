@@ -7,12 +7,12 @@ import {
   jwtVerify,
   type JWTPayload,
 } from 'jose';
-import type { AppConfig } from './config.js';
-import { ChallengeStore } from './challenges.js';
-import { requireEd25519PublicJwk } from './crypto.js';
-import { AppError, asErrorMessage } from './errors.js';
-import type { StoredIdentity, VerificationResult } from './types.js';
-import { WebVhService } from './webvh.js';
+import type { AppConfig } from './config';
+import { ChallengeStore } from './challenges';
+import { requireEd25519PublicJwk } from './crypto';
+import { AppError, asErrorMessage } from './errors';
+import type { StoredIdentity, VerificationResult } from './types';
+import { WebVhService } from './webvh';
 
 const VC_TYPE = 'WebVHExampleCredential';
 const VC_CONTEXT = 'https://www.w3.org/ns/credentials/v2';

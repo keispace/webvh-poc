@@ -1,7 +1,7 @@
 import { mkdir, readFile, readdir, rename, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { AppError } from './errors.js';
-import type { StoredIdentity } from './types.js';
+import { AppError } from './errors';
+import type { StoredIdentity } from './types';
 
 export class IdentityStore {
   readonly #identities = new Map<string, StoredIdentity>();

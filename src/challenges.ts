@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID } from 'node:crypto';
-import { AppError } from './errors.js';
+import { AppError } from './errors';
 
 export interface PresentationChallenge {
   id: string;

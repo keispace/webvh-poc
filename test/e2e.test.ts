@@ -5,9 +5,9 @@ import { updateDID } from 'didwebvh-ts';
 import type { FastifyInstance } from 'fastify';
 import { decodeJwt, decodeProtectedHeader } from 'jose';
 import { afterEach, describe, expect, test } from 'vitest';
-import { createApp, type AppServices } from '../src/app.js';
-import { loadConfig } from '../src/config.js';
-import { Ed25519WebVhCrypto, generateEd25519Key } from '../src/crypto.js';
+import { createApp, type AppServices } from '../src/webvh-app';
+import { loadConfig } from '../src/config';
+import { Ed25519WebVhCrypto, generateEd25519Key } from '../src/crypto';
 
 interface Fixture {
     app: FastifyInstance;
@@ -20,14 +20,7 @@ const fixtures: Fixture[] = [];
 async function fixture(): Promise<Fixture> {
     const dataDir = await mkdtemp(join(tmpdir(), 'webvh-poc-'));
     const created = await createApp(
-        loadConfig({
-            DID_DOMAIN: 'example.com',
-            DATA_DIR: dataDir,
-            ISSUER_SLUG: 'poc',
-            VERIFIER_AUDIENCE: 'https://example.com/verifier',
-            CHALLENGE_TTL_SECONDS: '300',
-            VC_TTL_SECONDS: '3600',
-        }),
+        { ...loadConfig(), dataDir },
     );
     const result = { ...created, dataDir };
     fixtures.push(result);
@@ -137,8 +130,8 @@ describe('independent did:webvh VC/VP server', () => {
             d: expect.any(String),
         });
         expect(holder.pathDerivedFromInitialPublicKey).toBe(true);
-        expect(holder.did).toBe(`did:webvh:${holder.did.split(':')[2]}:example.com:${holder.pathId}`);
-        expect(holder.logUrl).toBe(`https://example.com/${holder.pathId}/did.jsonl`);
+        expect(holder.did).toBe(`did:webvh:${holder.did.split(':')[2]}:webvh-poc.vercel.app:${holder.pathId}`);
+        expect(holder.logUrl).toBe(`https://webvh-poc.vercel.app/${holder.pathId}/did.jsonl`);
 
         const reusedKey = await app.inject({
             method: 'POST',

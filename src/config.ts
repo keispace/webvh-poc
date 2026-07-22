@@ -11,6 +11,18 @@ export interface AppConfig {
     vcTtlSeconds: number;
 }
 
+// PoC runtime settings. Edit these values directly before deploying.
+const settings = {
+    host: '127.0.0.1',
+    port: 3000,
+    didDomain: 'webvh-poc.vercel.app',
+    dataDir: '/tmp/webvh-poc/webvh-poc.vercel.app',
+    issuerSlug: 'poc',
+    verifierAudience: 'https://webvh-poc.vercel.app/verifier',
+    challengeTtlSeconds: 300,
+    vcTtlSeconds: 3600,
+} as const;
+
 function positiveInteger(value: string | undefined, fallback: number, name: string): number {
     if (value === undefined) return fallback;
     const parsed = Number(value);
@@ -36,16 +48,16 @@ function validateSlug(value: string): string {
     return normalized;
 }
 
-export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
-    const didDomain = validateDidDomain(env.DID_DOMAIN ?? 'example.com');
+export function loadConfig(): AppConfig {
+    const didDomain = validateDidDomain(settings.didDomain);
     return {
-        host: env.HOST ?? '127.0.0.1',
-        port: positiveInteger(env.PORT, 3010, 'PORT'),
+        host: process.env.HOST ?? settings.host,
+        port: positiveInteger(process.env.PORT, settings.port, 'PORT'),
         didDomain,
-        dataDir: resolve(env.DATA_DIR ?? `.data/${didDomain}`),
-        issuerSlug: validateSlug(env.ISSUER_SLUG ?? 'poc'),
-        verifierAudience: env.VERIFIER_AUDIENCE ?? 'https://example.com/verifier',
-        challengeTtlSeconds: positiveInteger(env.CHALLENGE_TTL_SECONDS, 300, 'CHALLENGE_TTL_SECONDS'),
-        vcTtlSeconds: positiveInteger(env.VC_TTL_SECONDS, 3600, 'VC_TTL_SECONDS'),
+        dataDir: resolve(settings.dataDir),
+        issuerSlug: validateSlug(settings.issuerSlug),
+        verifierAudience: settings.verifierAudience,
+        challengeTtlSeconds: settings.challengeTtlSeconds,
+        vcTtlSeconds: settings.vcTtlSeconds,
     };
 }

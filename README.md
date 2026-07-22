@@ -8,9 +8,9 @@ The project is intentionally self-contained. It includes an embedded holder, iss
 
 ## What it demonstrates
 
-- Holder DID: `did:webvh:{SCID}:example.com:{SS58(initial-public-key)}`
-- Issuer DID: `did:webvh:{SCID}:example.com:issuer:poc`
-- DID log URL: `https://example.com/{SS58(initial-public-key)}/did.jsonl`
+- Holder DID: `did:webvh:{SCID}:webvh-poc.vercel.app:{SS58(initial-public-key)}`
+- Issuer DID: `did:webvh:{SCID}:webvh-poc.vercel.app:issuer:poc`
+- DID log URL: `https://webvh-poc.vercel.app/{SS58(initial-public-key)}/did.jsonl`
 - `did:webvh` v1.0 history with `eddsa-jcs-2022` proofs and hash-chain validation
 - Key-first creation: Ed25519 key generation followed by one-time `keyId` consumption during genesis
 - VC issuance: VCDM 2.0 Ed25519 `vc+jwt` signed by the issuer `assertionMethod`
@@ -33,10 +33,10 @@ The VC/VP flow follows W3C VC Data Model 2.0 and Securing Verifiable Credentials
 
 ## User interfaces
 
-After starting the server, open:
+After starting the Next.js app, open:
 
-- [http://127.0.0.1:3010/](http://127.0.0.1:3010/) — step-by-step DID, VC, VP, and rotation console
-- [http://127.0.0.1:3010/api-doc](http://127.0.0.1:3010/api-doc) — API descriptions, request/response examples, editable requests, and direct same-origin calls
+- [http://127.0.0.1:3000/](http://127.0.0.1:3000/) — step-by-step DID, VC, VP, and rotation console
+- [http://127.0.0.1:3000/api-doc](http://127.0.0.1:3000/api-doc) — API descriptions, request/response examples, editable requests, and direct same-origin calls
 
 The API explorer carries response values such as `keyId`, holder DID, credential JWT, challenge ID, and presentation JWT into dependent requests in browser memory. Its recommended E2E action runs the complete key → DID → VC → VP → rotation sequence.
 
@@ -53,7 +53,7 @@ npm run demo
 npm run dev
 ```
 
-The default server address is `http://127.0.0.1:3010`. `npm run demo` executes the full flow through Fastify injection and prints the signed JWTs and verification results.
+The default app address is `http://127.0.0.1:3000`. `npm run demo` executes the full flow through the in-process API router and prints the signed JWTs and verification results.
 
 ## Docker
 
@@ -61,16 +61,12 @@ Docker is optional. It pins Node.js and production dependencies so the PoC can b
 
 ```bash
 docker build -t webvh-poc .
-docker run --rm -p 3010:3010 webvh-poc
+docker run --rm -p 3000:3000 webvh-poc
 ```
 
-The container listens on `0.0.0.0:3010`; open `http://127.0.0.1:3010`. The first `3010` in `-p 3010:3010` is the host port, so `-p 8080:3010` exposes the same container at `http://127.0.0.1:8080`.
+The container listens on `0.0.0.0:3000`; open `http://127.0.0.1:3000`. The first `3000` in `-p 3000:3000` is the host port, so `-p 8080:3000` exposes the same container at `http://127.0.0.1:8080`.
 
-The container writes issuer and holder private state under `/app/.data`. Without a volume, that state remains in the disposable container layer and is removed with `--rm`. To persist it explicitly:
-
-```bash
-docker run --rm -p 3010:3010 -v webvh-poc-data:/app/.data webvh-poc
-```
+The container writes issuer and holder private state under `/tmp/webvh-poc/webvh-poc.vercel.app`. It is disposable PoC state and is removed with `--rm`.
 
 ## API overview
 
@@ -100,13 +96,13 @@ docker run --rm -p 3010:3010 -v webvh-poc-data:/app/.data webvh-poc
 Generate a holder key:
 
 ```bash
-curl -sS -X POST http://127.0.0.1:3010/api/keys
+curl -sS -X POST http://127.0.0.1:3000/api/keys
 ```
 
 Use the returned `keyId` to create a DID:
 
 ```bash
-curl -sS http://127.0.0.1:3010/api/dids \
+curl -sS http://127.0.0.1:3000/api/dids \
   -H 'content-type: application/json' \
   -d '{"keyId":"<pending-key-id>"}'
 ```
@@ -114,7 +110,7 @@ curl -sS http://127.0.0.1:3010/api/dids \
 Use the returned DID to issue a credential:
 
 ```bash
-curl -sS http://127.0.0.1:3010/api/credentials \
+curl -sS http://127.0.0.1:3000/api/credentials \
   -H 'content-type: application/json' \
   -d '{"holderDid":"<holder-did>","claims":{"name":"Alice","status":"active"}}'
 ```
@@ -123,25 +119,21 @@ Continue with `/api/presentations/challenges`, `/api/presentations`, and `/api/v
 
 ## Configuration
 
-The application reads environment variables from the process and does not automatically load `.env` files.
+Next.js handles the listener port itself. Edit the `settings` constant in `src/config.ts` before running or deploying:
 
-- `HOST` — bind host, default `127.0.0.1`
-- `PORT` — bind port, default `3010`
-- `DID_DOMAIN` — DNS hostname embedded in DIDs, default `example.com`
-- `DATA_DIR` — private key and DID log storage; default `.data/{DID_DOMAIN}`
-- `ISSUER_SLUG` — issuer path slug, default `poc`
-- `VERIFIER_AUDIENCE` — exact VP audience, default `https://example.com/verifier`
-- `CHALLENGE_TTL_SECONDS` — challenge lifetime
-- `VC_TTL_SECONDS` — credential lifetime
+- `didDomain` — DNS hostname embedded in DIDs; set this to the deployed domain without `https://`
+- `dataDir` — private key and DID log storage; the PoC default is `/tmp/webvh-poc/webvh-poc.vercel.app`
+- `verifierAudience` — exact VP audience, normally `https://<didDomain>/verifier`
+- `issuerSlug`, `challengeTtlSeconds`, and `vcTtlSeconds` — PoC runtime settings
 
 For public resolution, configure TLS and reverse-proxy routing for:
 
 ```text
-https://example.com/*/did.jsonl
-https://example.com/issuer/*/did.jsonl
+https://webvh-poc.vercel.app/*/did.jsonl
+https://webvh-poc.vercel.app/issuer/*/did.jsonl
 ```
 
-`example.com` is a documentation domain. Replace it with a hostname you control before attempting public resolution.
+The PoC is configured for the Vercel production hostname `webvh-poc.vercel.app`.
 
 ## Security limitations
 

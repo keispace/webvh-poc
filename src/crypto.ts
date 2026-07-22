@@ -5,7 +5,7 @@ import {
   multibaseEncode,
   prepareDataForSigning,
 } from 'didwebvh-ts';
-import type { Ed25519PrivateJwk, Ed25519PublicJwk, VerificationMethod } from './types.js';
+import type { Ed25519PrivateJwk, Ed25519PublicJwk, VerificationMethod } from './types';
 
 interface SigningInput {
   document: unknown;

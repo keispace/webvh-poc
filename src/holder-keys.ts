@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { generateEd25519Key, ss58EncodePublicKey, type GeneratedKeyMaterial } from './crypto.js';
-import { AppError } from './errors.js';
+import { generateEd25519Key, ss58EncodePublicKey, type GeneratedKeyMaterial } from './crypto';
+import { AppError } from './errors';
 
 const PENDING_KEY_TTL_MS = 10 * 60 * 1000;
 

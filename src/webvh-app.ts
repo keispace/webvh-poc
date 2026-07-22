@@ -1,13 +1,13 @@
 import { readFile } from 'node:fs/promises';
 import Fastify, { type FastifyInstance, type FastifyReply } from 'fastify';
-import { ChallengeStore } from './challenges.js';
-import type { AppConfig } from './config.js';
-import { CredentialService } from './credentials.js';
-import { AppError } from './errors.js';
-import { PendingHolderKeyStore, publicPendingKey } from './holder-keys.js';
-import { IdentityStore } from './store.js';
-import type { DIDLog, StoredIdentity } from './types.js';
-import { WebVhService } from './webvh.js';
+import { ChallengeStore } from './challenges';
+import type { AppConfig } from './config';
+import { CredentialService } from './credentials';
+import { AppError } from './errors';
+import { PendingHolderKeyStore, publicPendingKey } from './holder-keys';
+import { IdentityStore } from './store';
+import type { DIDLog, StoredIdentity } from './types';
+import { WebVhService } from './webvh';
 
 export interface AppServices {
   store: IdentityStore;
@@ -20,6 +20,11 @@ export interface AppServices {
 export interface CreatedApp {
   app: FastifyInstance;
   services: AppServices;
+}
+
+export interface CreateAppOptions {
+  logger?: boolean;
+  includeUi?: boolean;
 }
 
 function requireRecord(value: unknown, name = 'body'): Record<string, unknown> {
@@ -59,7 +64,7 @@ function publicIdentity(identity: StoredIdentity, webvh: WebVhService) {
   };
 }
 
-export async function createApp(config: AppConfig, options: { logger?: boolean } = {}): Promise<CreatedApp> {
+export async function createApp(config: AppConfig, options: CreateAppOptions = {}): Promise<CreatedApp> {
   const store = new IdentityStore(config.dataDir);
   await store.init();
   const webvh = new WebVhService(config, store);
@@ -68,8 +73,6 @@ export async function createApp(config: AppConfig, options: { logger?: boolean }
   const holderKeys = new PendingHolderKeyStore();
   const credentials = new CredentialService(config, webvh, challenges, issuer);
   const app = Fastify({ logger: options.logger ?? false, bodyLimit: 1024 * 1024 });
-  const viewerHtml = await readFile(new URL('../public/index.html', import.meta.url), 'utf8');
-  const apiDocHtml = await readFile(new URL('../public/api-doc.html', import.meta.url), 'utf8');
 
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof AppError) {
@@ -79,9 +82,13 @@ export async function createApp(config: AppConfig, options: { logger?: boolean }
     return reply.status(500).send({ error: { code: 'internal_error', message: 'Internal server error' } });
   });
 
-  app.get('/', async (_request, reply) => reply.type('text/html; charset=utf-8').send(viewerHtml));
-  app.get('/viewer', async (_request, reply) => reply.type('text/html; charset=utf-8').send(viewerHtml));
-  app.get('/api-doc', async (_request, reply) => reply.type('text/html; charset=utf-8').send(apiDocHtml));
+  if (options.includeUi ?? true) {
+    const viewerHtml = await readFile(new URL('../public/index.html', import.meta.url), 'utf8');
+    const apiDocHtml = await readFile(new URL('../public/api-doc.html', import.meta.url), 'utf8');
+    app.get('/', async (_request, reply) => reply.type('text/html; charset=utf-8').send(viewerHtml));
+    app.get('/viewer', async (_request, reply) => reply.type('text/html; charset=utf-8').send(viewerHtml));
+    app.get('/api-doc', async (_request, reply) => reply.type('text/html; charset=utf-8').send(apiDocHtml));
+  }
   app.get('/health', async () => ({ status: 'ok', issuerDid: issuer.did }));
 
   app.get('/api/issuer', async () => publicIdentity(issuer, webvh));

@@ -1,5 +1,5 @@
 import { createDID, resolveDIDFromLog, updateDID } from 'didwebvh-ts';
-import type { AppConfig } from './config.js';
+import type { AppConfig } from './config';
 import {
   Ed25519WebVhCrypto,
   Ed25519WebVhVerifier,
@@ -7,10 +7,10 @@ import {
   requireEd25519PublicJwk,
   ss58EncodePublicKey,
   type GeneratedKeyMaterial,
-} from './crypto.js';
-import { AppError, asErrorMessage } from './errors.js';
-import { IdentityStore } from './store.js';
-import type { DIDDocument, DIDLog, IdentityRole, ResolutionResult, StoredIdentity, VerificationMethod } from './types.js';
+} from './crypto';
+import { AppError, asErrorMessage } from './errors';
+import { IdentityStore } from './store';
+import type { DIDDocument, DIDLog, IdentityRole, ResolutionResult, StoredIdentity, VerificationMethod } from './types';
 
 const SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
 
